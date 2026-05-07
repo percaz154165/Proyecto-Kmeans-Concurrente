@@ -9,4 +9,8 @@ public class Point {
     public double[] getCoordinates() {
         return coordinates;
     }
+
+    public int getDimension() {
+       return this.coordinates.length;
+    }
 }
