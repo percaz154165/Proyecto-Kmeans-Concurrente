@@ -81,4 +81,8 @@ public class Kmeans {
         assignPointsToClusters(points);
         return this.clusters;
     }
+
+    public List<Cluster> getClusters(){
+        return this.clusters;
+    }
 }

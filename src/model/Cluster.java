@@ -41,6 +41,14 @@ public class Cluster {
             this.points.remove(index);
         }
     }
+    
+    @Override
+    public String toString() {
+        // TODO Auto-generated method stub
+        double[] coords = this.centroid.getCoordinates();
+        String coordinates = coords.toString();
+        return coordinates;
+    }
 }
 
     
