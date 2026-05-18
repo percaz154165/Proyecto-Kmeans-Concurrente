@@ -5,6 +5,7 @@ import java.util.Random;
 
 import model.Cluster;
 import model.Point;
+import utils.EuclideanDistance;
 
 public class Kmeans {
     private int k;
@@ -17,8 +18,8 @@ public class Kmeans {
         this.clusters = new java.util.ArrayList<>();
     }
 
-    private void initCentroids(List<Point> points){
-        Random rand = new Random();
+    private void initCentroids(List<Point> points,int seed){
+        Random rand = new Random(seed);
 
         for (int i = 0; i < k; i++){
             int index = rand.nextInt(points.size());
@@ -65,24 +66,43 @@ public class Kmeans {
                 for (int i = 0; i < dim; i++){
                     sum[i] /= clusterPoints.size();
                 }
-                c.setCentroid(new Point(sum));
+                if(EuclideanDistance.calculate(new Point(sum), c.getCentroid()) < 1e-4){
+                    c.converged = true;
+                } else {
+                    c.setCentroid(new Point(sum));
+                }
             }
         }
     }
 
-    public List<Cluster> fit(List<Point> points){
-        initCentroids(points);
-
-        for (int i = 0; i < iterations; i++){
+    public List<Cluster> fit(List<Point> points, int seed){
+        initCentroids(points, seed);
+        int i = 0;
+        while (i < this.iterations && !hasConverged()){
             assignPointsToClusters(points);
             updateCentroids();
             cleanClusters();
+            i++;
+            if(i % 40 == 0) {
+                System.out.println("Iteration " + i + " completed...");
+            }
+
         }
         assignPointsToClusters(points);
+        System.out.println("Converged in " + i + " iterations from " + this.iterations + " given.");
         return this.clusters;
     }
 
     public List<Cluster> getClusters(){
         return this.clusters;
+    }
+
+    private boolean hasConverged(){
+        for (Cluster c : this.clusters){
+            if (!c.converged){
+                return false;
+            }
+        }
+        return true;
     }
 }

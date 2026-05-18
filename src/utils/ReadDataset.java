@@ -44,7 +44,7 @@ public class ReadDataset {
                 }
                 Point point = new Point(coordinates);
                 dataset.add(point);
-                if(i % 10000 == 0) {
+                if(i % 1000000 == 0) {
                     System.out.println("Readed " + i + " lines...");
                     System.out.println("Last point: " + line);
                 }
@@ -54,9 +54,16 @@ public class ReadDataset {
                 System.out.println("Finished loading dataset. Total points: " + dataset.size());
                 System.out.println("Min values: " + java.util.Arrays.toString(mins));
                 System.out.println("Max values: " + java.util.Arrays.toString(maxs));
+                System.out.println("Starting normalization of dataset...");
+                int pointIndex = 0;
                 for(Point point : dataset) {
                     point.normalize(mins, maxs);
+                    if(pointIndex % 1000000 == 0) {
+                        System.out.println("Normalized " + pointIndex + " points...");
+                    }
+                    pointIndex++;
                 }
+                System.out.println("Finished normalization of dataset.");
 
                 return dataset;
         } catch (Exception e) {
