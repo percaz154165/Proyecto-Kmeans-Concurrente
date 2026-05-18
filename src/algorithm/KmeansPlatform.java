@@ -1,21 +1,28 @@
 package algorithm;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import model.Cluster;
 import model.Point;
 import utils.EuclideanDistance;
 
-public class Kmeans {
+public class KmeansPlatform {
     private int k;
     private int iterations;
     private List<Cluster> clusters;
+    private ExecutorService pool;
 
-    public Kmeans(int k, int iter){
+    public KmeansPlatform(int k, int iter, int procs){
         this.k = k;
         this.iterations=iter;
         this.clusters = new java.util.ArrayList<>();
+        this.pool = Executors.newFixedThreadPool(procs);
     }
 
     private void initCentroids(List<Point> points,int seed){
@@ -34,25 +41,65 @@ public class Kmeans {
         }
     }
 
-    private void assignPointsToClusters(List<Point> points){
-        for (Point p : points){
+    private List<Cluster> assignBlocks(List<Point> points,int start, int end){
+        List<Cluster> localClusters = new java.util.ArrayList<>(this.k);
+
+        for(Cluster c : this.clusters){
+            localClusters.add(
+                new Cluster(
+                    c.getCentroid()
+                )
+            );
+        
+        }
+
+       for (int i = start; i < end; i++){
+            Point p = points.get(i);
             Cluster closestCluster = null;
             double minDistance = Double.MAX_VALUE;
 
-            for (Cluster c : this.clusters){
+            for (Cluster c : localClusters){
                 double distance = EuclideanDistance.calculate(p, c.getCentroid());
                 if (distance < minDistance){
                     minDistance = distance;
                     closestCluster = c;
                 }
             }
-
+            
             closestCluster.addPoint(p);
+            
         }
+
+        return localClusters;
     }
 
-    private void updateCentroids(){ 
-        for (Cluster c : this.clusters){
+    private void assignPointsToClusters(List<Point> points){
+        List<Future<List<Cluster>>> futures = new ArrayList<>();
+        int blockSize = Math.max(1, Math.floorDiv(points.size(), Runtime.getRuntime().availableProcessors()));
+
+        for (int i = 0; i < points.size(); i += blockSize) {
+            int start = i;
+            int end = Math.min(i + blockSize, points.size());
+            Future<List<Cluster>> future = pool.submit(() -> assignBlocks(points, start, end));
+            futures.add(future);
+        }
+
+        for (Future<List<Cluster>> future : futures) {
+            try {
+                List<Cluster> localClusters = future.get();
+                for (int i = 0; i < this.k; i++) {
+                    this.clusters.get(i).getPoints().addAll(localClusters.get(i).getPoints());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private void updateCentroidBlock(int start, int end){
+        for (int j = start; j < end; j++){
+            Cluster c = this.clusters.get(j);
             List <Point> clusterPoints = c.getPoints();
             if (!clusterPoints.isEmpty()){
                 int dim = clusterPoints.get(0).getDimension();
@@ -75,6 +122,28 @@ public class Kmeans {
         }
     }
 
+    private void updateCentroids(){ 
+        List<Future<?>> futures = new ArrayList<>();
+        int numTaskers = Math.min(this.k, Runtime.getRuntime().availableProcessors());
+        int blockSize = (k + numTaskers - 1) / numTaskers;
+        for (int i=0; i<k; i+=blockSize) {
+            int start=i;
+            int end = Math.min(i + blockSize,k);
+
+            Future<?> f =pool.submit(() -> {
+                updateCentroidBlock(start,end);
+            });
+            futures.add(f);
+        }
+        for(Future<?> f : futures){
+            try{
+                f.get();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
     public List<Cluster> fit(List<Point> points, int seed){
         initCentroids(points, seed);
         int i = 0;
@@ -83,13 +152,14 @@ public class Kmeans {
             updateCentroids();
             cleanClusters();
             i++;
-            if(i % 40 == 0) {
+            if(i % 10 == 0) {
                 System.out.println("Iteration " + i + " completed...");
             }
 
         }
         assignPointsToClusters(points);
         System.out.println("Converged in " + i + " iterations from " + this.iterations + " given.");
+        this.pool.shutdown();
         return this.clusters;
     }
 
