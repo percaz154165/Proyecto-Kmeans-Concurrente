@@ -6,7 +6,7 @@ import java.util.List;
 
 import model.Point;
 
-public class ReadDataset {
+public class ReadDatasetSerial {
 
     public static List<Point> loadDataset(String filePath) {
         System.out.println("Loading dataset from: " + filePath);
@@ -15,7 +15,7 @@ public class ReadDataset {
         try {
             reader = new BufferedReader(new java.io.FileReader(filePath));
             String line;
-            List<Point> dataset = new ArrayList<>();
+            List<Point> dataset = new ArrayList<>(9000000);
             reader.readLine(); // Skip header line
             int i = 0;
             double mins[] = new double[27];
@@ -38,7 +38,7 @@ public class ReadDataset {
                     if(coordinates[j] < mins[j]) {
                         mins[j] = coordinates[j];
                     }
-                    else if(coordinates[j] > maxs[j]) {
+                    if(coordinates[j] > maxs[j]) {
                         maxs[j] = coordinates[j];
                     }
                 }
@@ -46,14 +46,11 @@ public class ReadDataset {
                 dataset.add(point);
                 if(i % 1000000 == 0) {
                     System.out.println("Readed " + i + " lines...");
-                    System.out.println("Last point: " + line);
                 }
                 i++;
             }
 
                 System.out.println("Finished loading dataset. Total points: " + dataset.size());
-                System.out.println("Min values: " + java.util.Arrays.toString(mins));
-                System.out.println("Max values: " + java.util.Arrays.toString(maxs));
                 System.out.println("Starting normalization of dataset...");
                 int pointIndex = 0;
                 for(Point point : dataset) {
