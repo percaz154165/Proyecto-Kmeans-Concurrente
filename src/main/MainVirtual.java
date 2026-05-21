@@ -3,7 +3,7 @@ package main;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import algorithm.KmeansSerial;
+import algorithm.KmeansVirtual;
 import model.Cluster;
 import model.Point;
 import utils.ReadDatasetVirtual;
@@ -30,7 +30,7 @@ public class MainVirtual {
 
         System.out.println("Dataset loaded with " + points.size() + " points.");
         List<Cluster> solution = new ArrayList<>();
-        KmeansSerial kmeans = new KmeansSerial(k, iterations);
+        KmeansVirtual kmeans = new KmeansVirtual(k, iterations);
         System.out.println("Starting kmeans");
 
         long t2 = System.nanoTime();

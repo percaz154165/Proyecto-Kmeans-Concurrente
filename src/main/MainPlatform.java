@@ -6,7 +6,7 @@ import java.util.Scanner;
 import algorithm.KmeansPlatform;
 import model.Cluster;
 import model.Point;
-import utils.ReadDatasetSerial;
+import utils.ReadDatasetPlatform;
 
 public class MainPlatform {
     public static void main(String[] args) throws Exception {
@@ -25,7 +25,7 @@ public class MainPlatform {
         scan.close();
         
         long t0 = System.nanoTime();
-        List<Point> points = ReadDatasetSerial.loadDataset(datasetPath);
+        List<Point> points = ReadDatasetPlatform.loadDataset(datasetPath);
         long t1 = System.nanoTime();
 
         System.out.println("Dataset loaded with " + points.size() + " points.");
