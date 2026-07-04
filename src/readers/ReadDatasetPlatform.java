@@ -1,4 +1,4 @@
-package utils;
+package readers;
 
 import java.io.BufferedReader;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 
 import model.Point;
 
-public class ReadDatasetVirtual {
+public class ReadDatasetPlatform {
 
     public static List<Point> loadDataset(String filePath) {
         System.out.println("Loading dataset from: " + filePath);
@@ -17,7 +17,7 @@ public class ReadDatasetVirtual {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new java.io.FileReader(filePath));
-            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+            ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             String line;
             List<Point> dataset = new ArrayList<>(9000000);
             reader.readLine(); // Skip header line

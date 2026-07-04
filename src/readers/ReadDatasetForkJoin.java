@@ -1,4 +1,4 @@
-package utils;
+package readers;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
 import model.Point;
+import utils.NormalizeTask;
+import utils.ReadTask;
 
 public class ReadDatasetForkJoin {
 

@@ -6,7 +6,7 @@ import java.util.Scanner;
 import algorithm.KmeansPlatform;
 import model.Cluster;
 import model.Point;
-import utils.ReadDatasetPlatform;
+import readers.ReadDatasetPlatform;
 
 public class MainPlatform {
     public static void main(String[] args) throws Exception {

@@ -6,7 +6,7 @@ import java.util.Scanner;
 import algorithm.KmeansPlatform;
 import model.Cluster;
 import model.Point;
-import utils.ReadDatasetVirtual;
+import readers.ReadDatasetVirtual;
 
 public class MainHybrid {
     public static void main(String[] args) throws Exception {

@@ -1,4 +1,4 @@
-package utils;
+package readers;
 
 import java.io.BufferedReader;
 import java.util.ArrayList;

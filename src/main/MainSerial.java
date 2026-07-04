@@ -6,7 +6,7 @@ import java.util.Scanner;
 import algorithm.KmeansSerial;
 import model.Cluster;
 import model.Point;
-import utils.ReadDatasetSerial;
+import readers.ReadDatasetSerial;
 
 public class MainSerial {
     public static void main(String[] args) throws Exception {

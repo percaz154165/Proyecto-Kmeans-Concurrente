@@ -6,7 +6,7 @@ import java.util.Scanner;
 import algorithm.KmeansForkJoin;
 import model.Cluster;
 import model.Point;
-import utils.ReadDatasetForkJoin;
+import readers.ReadDatasetForkJoin;
 
 public class MainForkJoin {
     public static void main(String[] args) throws Exception {

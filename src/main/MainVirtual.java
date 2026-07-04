@@ -6,7 +6,7 @@ import java.util.Scanner;
 import algorithm.KmeansVirtual;
 import model.Cluster;
 import model.Point;
-import utils.ReadDatasetVirtual;
+import readers.ReadDatasetVirtual;
 
 public class MainVirtual {
     public static void main(String[] args) throws Exception {
