@@ -96,4 +96,82 @@ public class KmeansCompletableFuture {
 
     }
 
-    
+    private void updateCentroidBlock(int start, int end){
+        for (int j = start; j < end; j++){
+            Cluster c = this.clusters.get(j);
+            List <Point> clusterPoints = c.getPoints();
+            if (!clusterPoints.isEmpty()){
+                int dim = clusterPoints.get(0).getDimension();
+                double[] sum = new double[dim];
+                for (Point p : clusterPoints){
+                    double[] coords = p.getCoordinates();
+                    for (int i = 0; i < dim; i++){
+                        sum[i] += coords[i];
+                    }
+                }
+                for (int i = 0; i < dim; i++){
+                    sum[i] /= clusterPoints.size();
+                }
+                if(EuclideanDistance.calculate(new Point(sum), c.getCentroid()) < 1e-4){
+                    c.converged = true;
+                } else {
+                    c.setCentroid(new Point(sum));
+                }
+            }
+        }
+    }
+
+    private void updateCentroids(){ 
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+        int numTaskers = Math.min(this.k, Runtime.getRuntime().availableProcessors());
+        int blockSize = (k + numTaskers - 1) / numTaskers;
+        for (int i=0; i<k; i+=blockSize) {
+            int start=i;
+            int end = Math.min(i + blockSize,k);
+
+            CompletableFuture<?> f = CompletableFuture.runAsync(() -> {
+                updateCentroidBlock(start,end);
+            }, pool);
+            futures.add(f);
+        }
+        for(CompletableFuture<?> f : futures){
+            try{
+                f.join();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public List<Cluster> fit(List<Point> points, int seed){
+        initCentroids(points, seed);
+        int i = 0;
+        while (i < this.iterations && !hasConverged()){
+            assignPointsToClusters(points);
+            updateCentroids();
+            cleanClusters();
+            i++;
+            if(i % 10 == 0) {
+                System.out.println("Iteration " + i + " completed...");
+            }
+
+        }
+        assignPointsToClusters(points);
+        System.out.println("Converged in " + i + " iterations from " + this.iterations + " given.");
+        this.pool.shutdown();
+        return this.clusters;
+    }
+
+    public List<Cluster> getClusters(){
+        return this.clusters;
+    }
+
+    private boolean hasConverged(){
+        for (Cluster c : this.clusters){
+            if (!c.converged){
+                return false;
+            }
+        }
+        return true;
+    }
+}
